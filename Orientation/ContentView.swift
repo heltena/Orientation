@@ -26,7 +26,6 @@ struct ContentView: View {
                 Label("Camera", systemImage: "camera")
             }
         }
-        .orientationLockModifier(mask: .portrait)
         .sheet(isPresented: $showCamera, restrictInterfaceOrientationTo: .portrait, modalTransitionStyle: .crossDissolve, animated: false) {
             print("bye bye")
         } content: {
