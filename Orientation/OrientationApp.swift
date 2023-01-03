@@ -14,7 +14,7 @@ struct OrientationApp: App {
     var body: some Scene {
         DocumentGroup(newDocument: OrientationDocument()) { file in
             ContentView(document: file.$document)
-                .orientationLockModifier(mask: .portrait)
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

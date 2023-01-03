@@ -7,41 +7,40 @@
 
 import SwiftUI
 
-struct ConfigView: View {
-    var dismiss: () -> Void
-    
-    var body: some View {
-        NavigationView {
-            Text("Hello")
-                .navigationTitle("Config")
-                .toolbar {
-                    Button(action: dismiss) {
-                        Text("Done")
-                    }
-                }
-        }
-    }
-}
-
 struct ContentView: View {
     @Binding var document: OrientationDocument
-    @State var showConfig = false
+    @State var showCamera = false
     
     var body: some View {
-        TextEditor(text: $document.text)
-            .toolbar {
+        Form {
+            Section {
+                Text(document.text)
+            } header: {
+                Text("Example")
+            }
+        }
+        .toolbar {
+            Button {
+                showCamera = true
+            } label: {
+                Label("Camera", systemImage: "camera")
+            }
+        }
+        .orientationLockModifier(mask: .portrait)
+        .sheet(isPresented: $showCamera, restrictInterfaceOrientationTo: .portrait, modalTransitionStyle: .crossDissolve, animated: false) {
+            print("bye bye")
+        } content: {
+            VStack(spacing: 20) {
+                Spacer()
+                Text("Show Camera Preview here")
                 Button {
-                    showConfig = true
+                    showCamera = false
                 } label: {
-                    Label("Config", systemImage: "gear")
+                    Text("Close")
                 }
+                Spacer()
             }
-            .fullScreenCover(isPresented: $showConfig) {
-                ConfigView() {
-                    showConfig = false
-                }
-                .orientationLockModifier(mask: .all)
-            }
+        }
     }
 }
 

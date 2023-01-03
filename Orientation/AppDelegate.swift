@@ -11,7 +11,7 @@ import SwiftUI
 @MainActor
 public class AppDelegate: NSObject, ObservableObject, UIApplicationDelegate {
     private var orientationLocks: [UIWindow: [UIInterfaceOrientationMask]] = [:]
-    
+
     private func orientationLock(for window: UIWindow?) -> UIInterfaceOrientationMask {
         if let window, let peek = orientationLocks[window]?.last {
             return peek
@@ -25,7 +25,9 @@ public class AppDelegate: NSObject, ObservableObject, UIApplicationDelegate {
         var values = orientationLocks[window] ?? []
         values.append(to)
         orientationLocks[window] = values
-        window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        UIView.performWithoutAnimation {
+            window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        }
     }
     
     fileprivate func popOrientationLock(for window: UIWindow?) {
@@ -38,7 +40,9 @@ public class AppDelegate: NSObject, ObservableObject, UIApplicationDelegate {
                 orientationLocks[window] = locks
             }
         }
-        window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        UIView.performWithoutAnimation {
+            window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        }
     }
     
     public func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
@@ -56,7 +60,21 @@ public class AppDelegate: NSObject, ObservableObject, UIApplicationDelegate {
 
 public class SceneDelegate: NSObject, ObservableObject, UIWindowSceneDelegate {
     public var window: UIWindow?
-
+    @Published public var orientation: UIDeviceOrientation
+    
+    public override init() {
+        orientation = .unknown
+        super.init()
+        NotificationCenter.default.addObserver(forName: UIDevice.orientationDidChangeNotification, object: UIDevice.current, queue: .main) { [weak self] notification in
+            let orientation = UIDevice.current.orientation
+            if orientation != .unknown {
+                UIView.performWithoutAnimation {                    
+                    self?.orientation = orientation
+                }
+            }
+        }
+    }
+    
     public func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
         self.window = windowScene.keyWindow
