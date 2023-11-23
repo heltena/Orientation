@@ -1,10 +1,11 @@
 //
-//  RestrictedInterfaceOrientationSheet.swift
+//  RestrictedInterfaceOrientationFullScreenCover.swift
 //  Orientation
 //
 //  Created by Heliodoro Tejedor Navarro on 1/3/23.
 //
 
+import UIKit
 import SwiftUI
 
 public enum ModalTransitionStyle: Int, @unchecked Sendable {
@@ -17,18 +18,26 @@ public enum ModalTransitionStyle: Int, @unchecked Sendable {
     }
 }
 
-struct RestrictedInterfaceOrientationSheet<SheetContent: View>: UIViewControllerRepresentable {
+public struct RestrictedInterfaceOrientationFullScreenCover<SheetContent: View>: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     var restrictInterfaceOrientationTo: UIInterfaceOrientationMask
     var modalTransitionStyle: ModalTransitionStyle
     var animated: Bool
     var content: () -> SheetContent
     
-    func makeUIViewController(context: Context) -> InternalViewController {
+    public init(isPresented: Binding<Bool>, restrictInterfaceOrientationTo: UIInterfaceOrientationMask, modalTransitionStyle: ModalTransitionStyle, animated: Bool, content: @escaping () -> SheetContent) {
+        self._isPresented = isPresented
+        self.restrictInterfaceOrientationTo = restrictInterfaceOrientationTo
+        self.modalTransitionStyle = modalTransitionStyle
+        self.animated = animated
+        self.content = content
+    }
+    
+    public func makeUIViewController(context: Context) -> InternalViewController {
         InternalViewController()
     }
     
-    func updateUIViewController(_ uiViewController: InternalViewController, context: Context) {
+    public func updateUIViewController(_ uiViewController: InternalViewController, context: Context) {
         if !isPresented {
             uiViewController.presentedViewController?.dismiss(animated: animated)
             return
@@ -50,8 +59,8 @@ struct RestrictedInterfaceOrientationSheet<SheetContent: View>: UIViewController
         fatalError("Invalid parent when dismissing a presented view controller")
     }
 
-    class InternalViewController: UIViewController {
-        override func loadView() {
+    public class InternalViewController: UIViewController {
+        public override func loadView() {
             super.loadView()
             view.backgroundColor = .clear
         }
@@ -75,7 +84,7 @@ struct RestrictedInterfaceOrientationSheet<SheetContent: View>: UIViewController
     }
 }
 
-struct RestrictedInterfaceOrientationSheetViewModifier<SheetContent: View>: ViewModifier {
+struct RestrictedInterfaceOrientationFullScreenCoverViewModifier<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     var restrictInterfaceOrientationTo: UIInterfaceOrientationMask
     var modalTransitionStyle: ModalTransitionStyle
@@ -85,7 +94,7 @@ struct RestrictedInterfaceOrientationSheetViewModifier<SheetContent: View>: View
     func body(content: Content) -> some View {
         content
             .background {
-                RestrictedInterfaceOrientationSheet(
+                RestrictedInterfaceOrientationFullScreenCover(
                     isPresented: $isPresented,
                     restrictInterfaceOrientationTo: restrictInterfaceOrientationTo,
                     modalTransitionStyle: modalTransitionStyle,
@@ -96,9 +105,9 @@ struct RestrictedInterfaceOrientationSheetViewModifier<SheetContent: View>: View
 }
 
 extension View {
-    public func sheet<SheetContent: View>(isPresented: Binding<Bool>, restrictInterfaceOrientationTo: UIInterfaceOrientationMask = .portrait, modalTransitionStyle: ModalTransitionStyle = .crossDissolve, animated: Bool = true, onDismiss: (() -> Void)?, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
+    public func fullScreenCover<SheetContent: View>(isPresented: Binding<Bool>, restrictInterfaceOrientationTo: UIInterfaceOrientationMask = .portrait, modalTransitionStyle: ModalTransitionStyle = .crossDissolve, animated: Bool = true, onDismiss: (() -> Void)?, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         self.modifier(
-            RestrictedInterfaceOrientationSheetViewModifier(
+            RestrictedInterfaceOrientationFullScreenCoverViewModifier(
                 isPresented: isPresented,
                 restrictInterfaceOrientationTo: restrictInterfaceOrientationTo,
                 modalTransitionStyle: modalTransitionStyle,
